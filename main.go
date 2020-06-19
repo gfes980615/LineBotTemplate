@@ -13,13 +13,16 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/line/line-bot-sdk-go/linebot"
+	"gitlab.paradise-soft.com.tw/glob/utils/network"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 var bot *linebot.Client
@@ -36,8 +39,9 @@ func main() {
 
 func callbackHandler(w http.ResponseWriter, r *http.Request) {
 	events, err := bot.ParseRequest(r)
-
+	log.Println(r)
 	if err != nil {
+		log.Print(err.Error())
 		if err == linebot.ErrInvalidSignature {
 			w.WriteHeader(400)
 		} else {
@@ -46,15 +50,35 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	client := network.NewClient("https://script.google.com/macros/s/AKfycbzDtZfQHmr0YJF7F_m2ZfatU7Hu-FwTpBTwQfYXqZAv7P1JnHQ/exec")
+	params := map[string]string{
+		"msg": "2",
+	}
+	buf, err := client.Get(params)
+	if err != nil {
+		log.Print(err.Error())
+		return
+	}
+
+	type Tmp struct {
+		Msg string
+	}
+
+	test := Tmp{}
+	if err := json.Unmarshal(buf, &test); err != nil {
+		log.Print(err.Error())
+		return
+	}
+
 	for _, event := range events {
 		if event.Type == linebot.EventTypeMessage {
-			switch message := event.Message.(type) {
+			switch event.Message.(type) {
 			case *linebot.TextMessage:
-				quota, err := bot.GetMessageQuota().Do()
-				if err != nil {
-					log.Println("Quota err:", err)
-				}
-				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.ID+":"+message.Text+" OK! remain message:"+strconv.FormatInt(quota.Value, 10))).Do(); err != nil {
+				// quota, err := bot.GetMessageQuota().Do()
+				// if err != nil {
+				// 	log.Println("Quota err:", err)
+				// }
+				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("test: "+test.Msg)).Do(); err != nil {
 					log.Print(err)
 				}
 			}
