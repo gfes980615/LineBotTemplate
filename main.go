@@ -15,12 +15,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/line/line-bot-sdk-go/linebot"
-	"gitlab.paradise-soft.com.tw/glob/utils/network"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -49,14 +49,15 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-
-	client := network.NewClient("https://script.google.com/macros/s/AKfycbzDtZfQHmr0YJF7F_m2ZfatU7Hu-FwTpBTwQfYXqZAv7P1JnHQ/exec")
-	params := map[string]string{
-		"msg": "2",
-	}
-	buf, err := client.Get(params)
+	resp, err := http.Get("https://script.google.com/macros/s/AKfycbzDtZfQHmr0YJF7F_m2ZfatU7Hu-FwTpBTwQfYXqZAv7P1JnHQ/exec?msg=2")
 	if err != nil {
-		log.Print(err.Error())
+		log.Println("err:\n" + err.Error())
+		return
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("read error", err)
 		return
 	}
 
@@ -65,7 +66,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	test := Tmp{}
-	if err := json.Unmarshal(buf, &test); err != nil {
+	if err := json.Unmarshal(body, &test); err != nil {
 		log.Print(err.Error())
 		return
 	}
