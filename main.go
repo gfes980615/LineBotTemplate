@@ -39,40 +39,44 @@ func main() {
 }
 
 func callbackHandler(w http.ResponseWriter, r *http.Request) {
-	events, err := bot.ParseRequest(r)
-	if err != nil {
-		log.Print(err.Error())
-		if err == linebot.ErrInvalidSignature {
-			w.WriteHeader(400)
-		} else {
-			w.WriteHeader(500)
-		}
-		return
-	}
+	// events, err := bot.ParseRequest(r)
+	// if err != nil {
+	// 	log.Print(err.Error())
+	// 	if err == linebot.ErrInvalidSignature {
+	// 		w.WriteHeader(400)
+	// 	} else {
+	// 		w.WriteHeader(500)
+	// 	}
+	// 	return
+	// }
 
-	for _, event := range events {
-		if event.Type == linebot.EventTypeMessage {
-			switch message := event.Message.(type) {
-			case *linebot.TextMessage:
-				id, transferErr := strconv.ParseInt(message.Text, 10, 64)
-				text := getGoogleExcelValueById(id)
-				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(text)).Do(); err != nil {
-					log.Print(err)
-				}
-				if transferErr != nil {
-					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(transferErr.Error())).Do(); err != nil {
-						log.Print(err)
-					}
-					return
-				}
+	// for _, event := range events {
+	// 	if event.Type == linebot.EventTypeMessage {
+	// 		switch message := event.Message.(type) {
+	// 		case *linebot.TextMessage:
+	// 			id, transferErr := strconv.ParseInt(message.Text, 10, 64)
+	// 			text := getGoogleExcelValueById(id)
+	// 			if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(text)).Do(); err != nil {
+	// 				log.Print(err)
+	// 			}
+	// 			if transferErr != nil {
+	// 				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(transferErr.Error())).Do(); err != nil {
+	// 					log.Print(err)
+	// 				}
+	// 				return
+	// 			}
 
-			}
-		}
-	}
+	// 		}
+	// 	}
+	// }
+	fmt.Println(getGoogleExcelValueById(1))
 }
 
-func getGoogleExcelValueById(id int64) string {
-	resp, err := http.Get("https://script.google.com/macros/s/AKfycbzDtZfQHmr0YJF7F_m2ZfatU7Hu-FwTpBTwQfYXqZAv7P1JnHQ/exec?msg=" + fmt.Sprintf("%d", id))
+func getGoogleExcelValueById(id int) string {
+	s := strconv.Itoa(id)
+	url := "https://script.google.com/macros/s/AKfycbzDtZfQHmr0YJF7F_m2ZfatU7Hu-FwTpBTwQfYXqZAv7P1JnHQ/exec?msg=" + s
+	fmt.Println(url)
+	resp, err := http.Get(url)
 	if err != nil {
 		log.Println("err:\n" + err.Error())
 		return ""
