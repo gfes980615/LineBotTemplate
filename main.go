@@ -55,15 +55,17 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
 				id, transferErr := strconv.ParseInt(message.Text, 10, 64)
-				if err != nil {
+				text := getGoogleExcelValueById(id)
+				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(text)).Do(); err != nil {
+					log.Print(err)
+				}
+				if transferErr != nil {
 					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(transferErr.Error())).Do(); err != nil {
 						log.Print(err)
 					}
 					return
 				}
-				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(getGoogleExcelValueById(id))).Do(); err != nil {
-					log.Print(err)
-				}
+
 			}
 		}
 	}
