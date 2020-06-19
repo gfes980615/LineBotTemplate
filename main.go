@@ -19,6 +19,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/line/line-bot-sdk-go/linebot"
 
@@ -39,7 +40,6 @@ func main() {
 
 func callbackHandler(w http.ResponseWriter, r *http.Request) {
 	events, err := bot.ParseRequest(r)
-	log.Println(r)
 	if err != nil {
 		log.Print(err.Error())
 		if err == linebot.ErrInvalidSignature {
@@ -49,16 +49,40 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	resp, err := http.Get("https://script.google.com/macros/s/AKfycbzDtZfQHmr0YJF7F_m2ZfatU7Hu-FwTpBTwQfYXqZAv7P1JnHQ/exec?msg=2")
+
+	for _, event := range events {
+		if event.Type == linebot.EventTypeMessage {
+			switch message := event.Message.(type) {
+			case *linebot.TextMessage:
+				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.Text)).Do(); err != nil {
+					log.Print(err)
+				}
+				id, transferErr := strconv.ParseInt(message.Text, 10, 64)
+				if err != nil {
+					if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(transferErr.Error())).Do(); err != nil {
+						log.Print(err)
+					}
+					return
+				}
+				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(getGoogleExcelValueById(id))).Do(); err != nil {
+					log.Print(err)
+				}
+			}
+		}
+	}
+}
+
+func getGoogleExcelValueById(id int64) string {
+	resp, err := http.Get("https://script.google.com/macros/s/AKfycbzDtZfQHmr0YJF7F_m2ZfatU7Hu-FwTpBTwQfYXqZAv7P1JnHQ/exec?msg=" + fmt.Sprintf("%d", id))
 	if err != nil {
 		log.Println("err:\n" + err.Error())
-		return
+		return ""
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("read error", err)
-		return
+		return ""
 	}
 
 	type Tmp struct {
@@ -68,21 +92,8 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 	test := Tmp{}
 	if err := json.Unmarshal(body, &test); err != nil {
 		log.Print(err.Error())
-		return
+		return ""
 	}
 
-	for _, event := range events {
-		if event.Type == linebot.EventTypeMessage {
-			switch event.Message.(type) {
-			case *linebot.TextMessage:
-				// quota, err := bot.GetMessageQuota().Do()
-				// if err != nil {
-				// 	log.Println("Quota err:", err)
-				// }
-				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("test: "+test.Msg)).Do(); err != nil {
-					log.Print(err)
-				}
-			}
-		}
-	}
+	return test.Msg
 }
