@@ -70,6 +70,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	// fmt.Println(getGoogleExcelValueById(1))
 }
 
 func getGoogleExcelValueById(id int64) string {
@@ -97,13 +98,26 @@ func getGoogleExcelValueById(id int64) string {
 	}
 
 	switch reflect.TypeOf(test.Msg).Kind() {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+	case reflect.Int:
 		return fmt.Sprintf("%d", test.Msg.(int))
+	case reflect.Int8:
+		return fmt.Sprintf("%d", test.Msg.(int8))
+	case reflect.Int16:
+		return fmt.Sprintf("%d", test.Msg.(int16))
+	case reflect.Int32:
+		return fmt.Sprintf("%d", test.Msg.(int32))
+	case reflect.Int64:
+		return fmt.Sprintf("%d", test.Msg.(int64))
 	case reflect.String:
 		return test.Msg.(string)
+	case reflect.Float64:
+		return fmt.Sprintf("%.f", test.Msg.(float64))
+	case reflect.Float32:
+		return fmt.Sprintf("%.f", test.Msg.(float32))
 	default:
+		fmt.Println(reflect.TypeOf(test.Msg).Kind())
 		return "unknow type"
 	}
 
-	return "except error"
+	return "unexcept error"
 }
