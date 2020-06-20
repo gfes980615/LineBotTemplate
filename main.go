@@ -19,6 +19,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -95,5 +96,14 @@ func getGoogleExcelValueById(id int64) string {
 		return ""
 	}
 
-	return test.Msg.(string)
+	switch reflect.TypeOf(test.Msg).Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return fmt.Sprintf("%d", test.Msg.(int))
+	case reflect.String:
+		return test.Msg.(string)
+	default:
+		return "unknow type"
+	}
+
+	return "except error"
 }
