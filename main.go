@@ -108,7 +108,7 @@ func getDianaResponse(message string) string {
 		return err.Error()
 	}
 
-	return fmt.Sprintf("%s", bytes)
+	return string(bytes)
 }
 
 func getGoogleExcelValueById(id int64) string {
