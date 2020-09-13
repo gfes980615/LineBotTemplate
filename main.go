@@ -33,8 +33,16 @@ import (
 )
 
 var (
-	bot       *linebot.Client
-	dianaHost string
+	bot            *linebot.Client
+	dianaHost      string
+	MapleServerMap = map[string]bool{
+		"izcr": true, // 愛麗西亞
+		"izr":  true, // 艾莉亞
+		"plt":  true, // 普力特
+		"ld":   true, // 琉德
+		"yen":  true, // 優依那
+		"slc":  true, // 殺人鯨
+	}
 )
 
 func main() {
@@ -71,7 +79,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				if message.Text == "plt" {
+				if _, ok := MapleServerMap[message.Text]; ok {
 					bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(getDianaResponse(message.Text))).Do()
 				}
 
