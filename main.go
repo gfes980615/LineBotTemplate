@@ -70,9 +70,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 					bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(daily)).Do()
 					return
 				}
-				type Message struct {
-					Message string `json:"message"`
-				}
+
 				if message.Text == "plt" {
 					bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(getDianaResponse(message.Text))).Do()
 				}
@@ -107,8 +105,14 @@ func getDianaResponse(message string) string {
 		fmt.Println(err)
 		return err.Error()
 	}
+	type Message struct {
+		Message string `json:"message"`
+	}
 
-	return string(bytes)
+	tmp := &Message{}
+	json.Unmarshal(bytes, tmp)
+
+	return tmp.Message
 }
 
 func getGoogleExcelValueById(id int64) string {
