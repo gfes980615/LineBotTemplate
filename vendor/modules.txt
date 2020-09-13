@@ -1,3 +1,10 @@
+# github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
+## explicit
+github.com/axgle/mahonia
+# github.com/joho/godotenv v1.3.0
+## explicit
+github.com/joho/godotenv
+github.com/joho/godotenv/autoload
 # github.com/line/line-bot-sdk-go v7.3.0+incompatible
 ## explicit
 github.com/line/line-bot-sdk-go/linebot

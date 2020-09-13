@@ -32,11 +32,15 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-var bot *linebot.Client
+var (
+	bot       *linebot.Client
+	dianaHost string
+)
 
 func main() {
 	var err error
 	bot, err = linebot.New(os.Getenv("ChannelSecret"), os.Getenv("ChannelAccessToken"))
+	dianaHost = os.Getenv("diana_host")
 	log.Println("Bot:", bot, " err:", err)
 	http.HandleFunc("/callback", callbackHandler)
 	port := os.Getenv("PORT")
@@ -66,6 +70,12 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 					bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(daily)).Do()
 					return
 				}
+				type Message struct {
+					Message string `json:"message"`
+				}
+				if message.Text == "plt" {
+					bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(getDianaResponse(message.Text))).Do()
+				}
 
 				id, transferErr := strconv.ParseInt(message.Text, 10, 64)
 				text := getGoogleExcelValueById(id)
@@ -82,6 +92,23 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	// fmt.Println(getEveryDaySentence())
+}
+
+func getDianaResponse(message string) string {
+	url := "http://%s/diana/currency/value?server=%s"
+	resp, err := http.Get(fmt.Sprintf(url, dianaHost, message))
+	if err != nil {
+		fmt.Println(err)
+		return err.Error()
+	}
+
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+		return err.Error()
+	}
+
+	return fmt.Sprintf("%s", bytes)
 }
 
 func getGoogleExcelValueById(id int64) string {
@@ -180,7 +207,7 @@ func setJuziURL(url string, regex string) []URLStruct {
 func getPageSource(url string) string {
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", url, nil)
-	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Http get err:", err)
