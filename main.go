@@ -73,13 +73,15 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url := "http://%s/callback_lineTemplate?events=%v"
+	url := "http://%s/callback_lineTemplate?events=%s"
 	resp, err := http.Get(fmt.Sprintf(url, dianaHost, eventByte))
 	if err != nil {
 		log.Print(err)
 		return
 	}
 	log.Print(resp)
+	log.Print(eventByte)
+	log.Print(string(eventByte))
 	//for _, event := range events {
 	//	if event.Type == linebot.EventTypeMessage {
 	//		switch message := event.Message.(type) {
