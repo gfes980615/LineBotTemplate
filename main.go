@@ -67,35 +67,46 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, event := range events {
-		if event.Type == linebot.EventTypeMessage {
-			switch message := event.Message.(type) {
-			case *linebot.TextMessage:
-
-				//if message.Text == "a" {
-				//	daily := getEveryDaySentence()
-				//	bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(daily)).Do()
-				//	return
-				//}
-
-				//if _, ok := MapleServerMap[message.Text]; ok {
-				bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(getDianaResponse(message.Text))).Do()
-				//}
-				//
-				//id, transferErr := strconv.ParseInt(message.Text, 10, 64)
-				//text := getGoogleExcelValueById(id)
-				//if transferErr != nil {
-				//	if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(transferErr.Error())).Do(); err != nil {
-				//		log.Print(err)
-				//	}
-				//	return
-				//}
-				//if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(text)).Do(); err != nil {
-				//	log.Print(err)
-				//}
-			}
-		}
+	eventByte, err := json.Marshal(events)
+	if err != nil {
+		w.WriteHeader(400)
+		return
 	}
+
+	url := "http://%s/callback_lineTemplate?events=%v"
+	_, err = http.Get(fmt.Sprintf(url, dianaHost, eventByte))
+	if err != nil {
+		fmt.Println(err)
+	}
+	//for _, event := range events {
+	//	if event.Type == linebot.EventTypeMessage {
+	//		switch message := event.Message.(type) {
+	//		case *linebot.TextMessage:
+	//
+	//			//if message.Text == "a" {
+	//			//	daily := getEveryDaySentence()
+	//			//	bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(daily)).Do()
+	//			//	return
+	//			//}
+	//
+	//			//if _, ok := MapleServerMap[message.Text]; ok {
+	//			bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(getDianaResponse(message.Text))).Do()
+	//			//}
+	//			//
+	//			//id, transferErr := strconv.ParseInt(message.Text, 10, 64)
+	//			//text := getGoogleExcelValueById(id)
+	//			//if transferErr != nil {
+	//			//	if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(transferErr.Error())).Do(); err != nil {
+	//			//		log.Print(err)
+	//			//	}
+	//			//	return
+	//			//}
+	//			//if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(text)).Do(); err != nil {
+	//			//	log.Print(err)
+	//			//}
+	//		}
+	//	}
+	//}
 	// fmt.Println(getEveryDaySentence())
 }
 
